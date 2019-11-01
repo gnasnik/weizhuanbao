@@ -8,8 +8,8 @@
 
     <van-cell-group v-show="isRegister">
     <van-field v-model="username" clearable label="用户名" left-icon="contact" placeholder="请输入手机号"/>
-    <van-field v-model="code" center clearable left-icon="bag-o" label="验证码" placeholder="短信验证码">
-        <van-button slot="button" size="small" type="primary">发送验证码</van-button>
+    <van-field v-model="verifyCode" center clearable left-icon="bag-o" label="验证码" placeholder="短信验证码">
+        <van-button slot="button" size="small" type="primary" @click="sendCode" :disabled="disable_send" ref="verifyTime">发送验证码</van-button>
     </van-field>
     <van-field v-model="password" type="password" label="密码" left-icon="bag-o" placeholder="请输入6位密码"/>
     <van-field v-model="invite" label="邀请码" placeholder="可不填" left-icon="bag-o"/>
@@ -19,7 +19,7 @@
     <van-row>
     <van-col span="8" @click="isRegister=!isRegister"><span>{{regText}}</span></van-col>
     <van-col span="8"></van-col>
-    <van-col span="8"><span>忘记密码？</span></van-col>
+    <van-col span="8" @click="forgot"><span>忘记密码？</span></van-col>
     </van-row>
 
     <!-- <div class="wechat-login">
@@ -36,10 +36,13 @@ export default {
       return {
         username: '',
         password: '',
-        code: '',
+        verifyCode: '',
+        jobId:'',
         isBtnLoading: false,
         isRegister:false,
         invite: '',
+        time: 59,
+        disable_send:false,
       }
     },
     created () {
@@ -111,11 +114,16 @@ export default {
           this.isBtnLoading = false
           return;
         }
-        // check code 
+        if (!this.verifyCode) {
+            this.$toast('请输入验证码');
+            return;
+        }
         var data = {
             OpenId:this.username,
             Token:this.password,
+            VerifyCode: this.verifyCode,
             InviteCode:this.invite,
+            JobID:this.jobId,
         }
         this.$http.post('?c=1', data ,{headers:{'Content-Type':'application/json'}}).then(
          response => {
@@ -128,7 +136,13 @@ export default {
             if (response.body.code == 131079) {
                this.$toast('无效的邀请码');
                return 
-             }
+            }else if (response.body.code == 1048584) {
+                this.$toast('无效的验证码');
+                return 
+            }else if (response.body.code == 131081) {
+               this.$toast('账号已注册');
+               return 
+            }
              this.$toast('服务器正忙，请稍后再试');
           });
       },
@@ -136,9 +150,39 @@ export default {
          localStorage.setItem("Token",token);
          localStorage.setItem('Role',JSON.stringify(role));
          localStorage.setItem("Timestamp",new Date().getTime()+23*60*60*1000);
-      }
+      },
+      sendCode(){
+        var self = this;
+        if (!self.username || self.username.length < 11) {
+           self.$toast('无效的手机号');
+           return 
+        }
+        self.disable_send = true;
+        self.$refs.verifyTime.innerHTML = self.time + " s";
+        clearInterval(timerFunc)
+        var timerFunc = setInterval(() => {
+           self.time --
+           self.$refs.verifyTime.innerHTML = self.time + " s";
+           if (self.time <= 0) {
+            self.$refs.verifyTime.innerHTML = "重新发送";
+            self.disable_send = false
+            self.time = 59
+            clearInterval(timerFunc)
+          }
+        },1000)
+        var sms = {Mobile:self.username};
+        this.$http.post('?c=24',sms,{headers:{'Content-Type':'application/json'}}).then(
+          resp => {
+              if (resp.status == 200 )  {
+                  self.$toast("验证码已发送");
+                  self.jobId = resp.body.JobID;
+              }},
+          resp => {console.log(resp);});
+    },
+    forgot(){
+      this.$router.push("/reset");
     }
-}
+}}
 </script>
 
 

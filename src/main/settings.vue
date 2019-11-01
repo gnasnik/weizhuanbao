@@ -40,7 +40,6 @@ export default {
         }
     },
     created(){
-        console.log("refesh")
         this.role = JSON.parse(localStorage.getItem('Role'));
     },
     filters:{

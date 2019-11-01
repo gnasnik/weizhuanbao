@@ -16,6 +16,7 @@ import settings from './main/settings.vue';
 import service from './main/service.vue';
 import shop from './main/shop.vue';
 import edit from './main/edit.vue';
+import resetpwd from './main/resetpwd.vue';
 
 var router = new VueRouter({
     routes:[
@@ -35,7 +36,8 @@ var router = new VueRouter({
         {path:"/settings",name:'settings',component:settings},
         {path:"/service",name:'service',component:service},
         {path:"/shop",name:'shop',component:shop},
-        {path:'/edit',name:'edit',component:edit},
+        {path:"/edit",name:'edit',component:edit},
+        {path:"/reset",name:"reset",component:resetpwd},
     ]
 })
 
