@@ -1,17 +1,18 @@
 <template>
   <div class="login-container">
-    <van-image class="logo" width="15rem" height="15rem" fit="contain" src="../src/images/bg_login.png"/>
+    <div><van-image width="15rem" height="15rem" fit="contain" src="../src/images/bg_login.png"/></div>
     <van-cell-group v-show="!isRegister">
-    <van-field v-model="username" clearable label="手机号" left-icon="contact" placeholder="请输入手机号"/>
+    <van-field v-model="username" clearable label="用户名" left-icon="contact" placeholder="请输入手机号"/>
     <van-field v-model="password" type="password" label="密码" left-icon="bag-o" placeholder="请输入密码"/>
     </van-cell-group>
 
     <van-cell-group v-show="isRegister">
     <van-field v-model="username" clearable label="用户名" left-icon="contact" placeholder="请输入手机号"/>
-    <van-field v-model="code" center clearable left-icon="bag-o" label="短信验证码" placeholder="请输入短信验证码">
+    <van-field v-model="code" center clearable left-icon="bag-o" label="验证码" placeholder="短信验证码">
         <van-button slot="button" size="small" type="primary">发送验证码</van-button>
     </van-field>
-    <van-field v-model="password" type="password" label="密码" left-icon="bag-o" placeholder="请输入密码"/>
+    <van-field v-model="password" type="password" label="密码" left-icon="bag-o" placeholder="请输入6位密码"/>
+    <van-field v-model="invite" label="邀请码" placeholder="可不填" left-icon="bag-o"/>
     </van-cell-group>
 
     <van-button color="#EC6E55" :disabled="isBtnLoading" @click="login()" :text="btnText"></van-button>
@@ -38,9 +39,14 @@ export default {
         code: '',
         isBtnLoading: false,
         isRegister:false,
+        invite: '',
       }
     },
     created () {
+      if (this.$route.query.invite) {
+        this.isRegister = true;
+        this.invite = this.$route.query.invite;
+      }
       if(JSON.parse( localStorage.getItem('user')) && JSON.parse( localStorage.getItem('user')).username){
         this.username = JSON.parse( localStorage.getItem('user')).username;
         this.password = JSON.parse( localStorage.getItem('user')).password;
@@ -87,7 +93,7 @@ export default {
                this.$toast('密码错误');
              }else if (response.body.code == 131075) {
                this.$toast('用户不存在');
-             }else {
+            }else {
                this.$toast('服务器正忙，请稍后再试');
              }
           });
@@ -106,7 +112,12 @@ export default {
           return;
         }
         // check code 
-        this.$http.post('?c=1', {OpenId:this.username,Token:this.password},{headers:{'Content-Type':'application/json'}}).then(
+        var data = {
+            OpenId:this.username,
+            Token:this.password,
+            InviteCode:this.invite,
+        }
+        this.$http.post('?c=1', data ,{headers:{'Content-Type':'application/json'}}).then(
          response => {
             if (response.status == 200 )  { 
                 this.setSession(response.body.SessionID,response.body.Role);
@@ -114,7 +125,11 @@ export default {
             }
           },
           response => {
-               this.$toast('服务器正忙，请稍后再试');
+            if (response.body.code == 131079) {
+               this.$toast('无效的邀请码');
+               return 
+             }
+             this.$toast('服务器正忙，请稍后再试');
           });
       },
       setSession(token, role){
@@ -131,10 +146,13 @@ export default {
 .login-container{
     display: flex;
     flex-direction: column;
+    margin: 10px 20px;
+    text-align: center;
 }
 
 .van-row {
     font-size: 12px;
+    padding-top: 10px;
 }
 
 .van-button {

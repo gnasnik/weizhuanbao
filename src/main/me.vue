@@ -4,12 +4,18 @@
   <div class="me-header">
     <div class="me-nav">我的</div>
     <div class="me-avatar">
-      <van-uploader  :after-read="afterRead">
-          <van-image round width="50px" height="50px" :src="this.role.Icon | defaultAvatar"/>
-      </van-uploader>
+      <!-- <van-uploader  :after-read="afterRead"> -->
+      <van-image class="avatar" round width="50px" height="50px" :src="this.role.Icon | defaultAvatar"/>
+      <!-- </van-uploader> -->
       <div class="me-desc" @click="onEditName">
-          <span class="me-nickname">{{this.role.NickName}}</span>
-          <span class="me-id">ID：{{this.role.UserID}} <van-tag color="#FFD700">lv{{this.role.Level}}</van-tag></span>
+          <div>
+             <span class="me-nickname">{{this.role.NickName}}</span> 
+             <van-image v-if="this.role.Gender==1" width="20" height="20" src="./src/images/male1.png" />
+             <van-image v-else-if="this.role.Gender==2" width="20" height="20" src="./src/images/female1.png" />
+          </div>
+         
+          <span v-if="role" class="me-id">ID：{{this.role.UserID}} <van-tag color="#FFD700">lv{{this.role.Level}}</van-tag></span>
+          <div v-else @click.stop="clickLogin">登陆</div>
       </div>
       <div class="me-more" @click="onEditName"><van-icon name="arrow" size="20px"/></div>
     </div>
@@ -26,23 +32,30 @@
           <div>{{this.role.Profit / 1000 | zeroDefault}}</div>
           <div class="unit"> 总收入(元)</div>
       </div>
+      <van-button v-show="role" round type="default" size="mini" style="line-height='22px'" @click="onSignIn" 
+          :text="task_id!=0?'签到':'已签到'" :disabled="task_id==0"></van-button>
     </div>
     </div> 
   </div>
   <div class="me-container">
+    <!-- <div class="mail">
+        <van-cell title="消息" icon="envelop-o"></van-cell>
+    </div> -->
     <div class="me-body">
-      <van-cell title="账单" icon="orders-o"></van-cell>
-      <van-cell title="钱包" icon="paid"></van-cell>
-      <van-cell title="我的二维码" icon="qr" is-link to="/share"></van-cell>
+      <van-cell title="账单" icon="orders-o" @click="notOpen"></van-cell>
+      <van-cell title="钱包" icon="paid" @click="notOpen"></van-cell>
+      <van-cell title="微币商城" icon="shop-o" is-link to="/shop"></van-cell>
+      <van-cell v-show="role" title="我的二维码" icon="qr" is-link to="/share"></van-cell>
     </div>
 
     <div class="me-body-2">
-      <van-cell title="帮助中心" icon="question-o"></van-cell>
+      <!-- <van-cell title="帮助中心" icon="question-o"></van-cell> -->
+      <van-cell title="我的客服" icon="service-o" is-link to="/service"></van-cell>
       <van-cell title="意见反馈" icon="records" is-link to="/feedback"></van-cell>
       <van-cell title="关于我们" icon="info-o"  is-link to="/about"></van-cell>
     </div>
 
-    <div class="logout" @click="logout">退出登陆</div>
+    <div v-show="role" class="logout" @click="logout">退出登陆</div>
 
     <div class="bottom"></div>
   </div>
@@ -55,6 +68,7 @@ export default {
     data(){
         return {
            role:'',
+           task_id:0,
         }
     },
     filters:{
@@ -68,22 +82,12 @@ export default {
         }
     },
     created(){
-      this.role = JSON.parse(localStorage.getItem('Role'))
+      this.userInfo();
+      this.taskList();
     },
     methods:{
-      uuid() {
-        let s = [];
-        let hexDigits = "0123456789abcdef";
-        for (let i = 0; i < 36; i++) {
-            s[i] = hexDigits.substr(Math.floor(Math.random() * 0x10), 1);
-        }
-        s[14] = "4";
-        s[19] = hexDigits.substr((s[19] & 0x3) | 0x8, 1);
-        s[8] = s[13] = s[18] = s[23] = "-";
-        return s.join("");
-      },
       strNumSize(tempNum){
-        var stringNum = tempNum.toString()
+        var stringNum = tempNum.toString();
         var index = stringNum.indexOf(".")
         var newNum = stringNum;
         if(index!=-1){
@@ -92,6 +96,9 @@ export default {
         return newNum.length
       },
       unitConvert(num) {
+        if (!num) {
+          return '0';
+        }
         var moneyUnits = ["", "万", "亿", "万亿"]
         var dividend = 10000;
         var curentNum = num;
@@ -111,38 +118,33 @@ export default {
         // m.unit = curentUnit;
         return m;
       },
-      afterRead(file) {
-            var self = this;
-            this.$http.get('?c=7').then(resp=>{
-                if (resp.status==200) {
-                    var uuid = this.uuid()
-                    var pic = file.content.replace(/^.*?,/, '');
-                    var spl = file.file.name.split(".");
-                    var key = Base64.encode(uuid+'.'+spl[spl.length-1]);
-                    var mineType = Base64.encode(file.file.type);
-                    this.$http.post("http://up-z2.qiniup.com/putb64/-1/key/"+key+'/mimeType/'+ mineType,pic,
-                        {headers: {'Content-Type': 'application/octet-stream', 'Authorization': "UpToken "+resp.body.UpToken}}
-                    ).then(resp => {
-                      var icon = "http://pzjt57d8l.bkt.clouddn.com/"+ resp.data.key;
-                      var up = {
-                        Image:icon,
-                      }
-                      this.$http.post('?c=4',up,{headers:{'Content-Type':'application/json'}}).then(
-                          resp => {
-                              if (resp.status == 200 )  {
-                                  // self.role.Icon = icon;
-                                  localStorage.setItem('Role',JSON.stringify(resp.body.user));
-                                  self.role = resp.body.user;
-                              }
-                          },
-                          resp => {console.log(resp.body)}); 
-                    },resp => {
-                        console.log('上传失败',resp);
-                    }).catch(function (error) {
-                        console.log('上传失败',error)
-                    });
-                } 
-            },resp=>{})
+      userInfo(){
+          var up = {};
+          this.$http.post('?c=3',up,{headers:{'Content-Type':'application/json'}}).then(
+              resp=>{
+                  if ( resp.status == 200 )  {
+                      localStorage.setItem('Role',JSON.stringify(resp.body.user));
+                      this.role = resp.body.user;
+                  }
+              },
+              resp=>{console.log(resp.body)})   
+      },
+      taskList(){
+          var self = this;
+          var tag = {Tag:'WeekSigning'};
+          this.$http.post('?c=21',tag,{headers:{'Content-Type':'application/json'}}).then(
+          resp => {
+              if (resp.status == 200 )  {
+                  console.log(resp.body);
+                  for (var i = 0; i< resp.body.TaskList.length; i++) {
+                     var task = resp.body.TaskList[i];
+                     if (!task.Finish) {
+                         self.task_id = task.TaskID;
+                     }
+                  }
+              }
+          },
+          resp => {console.log(resp);});
       },
       logout(){
         localStorage.removeItem('Token');
@@ -151,7 +153,37 @@ export default {
         this.$router.push('/login');
       },
       onEditName(){
-          this.$router.push({path:"/edit_name",query:{name:this.role.NickName}})
+          if (!this.role){
+            this.$router.push("/login");
+            return 
+          }
+          this.$router.push({path:"/settings"})
+      },
+      notOpen(){
+        this.$toast("暂未开放，敬请期待")
+      },
+      clickLogin(){
+        this.$router.push("/login");
+      },
+      onSignIn(){
+          var self = this;
+          var sign = {TaskId:this.task_id};
+          this.$http.post('?c=22',sign,{headers:{'Content-Type':'application/json'}}).then(
+          resp => {
+              if (resp.status == 200 )  {
+                  console.log(resp.body);
+                  var rewards = resp.body.Rewards[0];
+                  if (rewards.ItemID == 1001) {
+                     self.$toast({ title:'签到成功',message: '+' + rewards.Count  ,icon: '../src/images/icon2.png'})
+                  }
+                  self.role.Coins += rewards.Count;
+              }
+          },
+          resp => {
+            if(resp.body.code == 262146) {
+              self.$toast('今天已签到');
+            }
+            console.log(resp);});
       }
     }
 }
@@ -160,12 +192,12 @@ export default {
 
 <style lang="scss" scoped>
   .header-out {
-    // margin: 5px 5px;
+    // margin: 10px 10px;
   }
   .me-header{
     background: url("../images/bg_003.png");
     padding-bottom: 10px;
-    // border-radius: 5px;
+    // border-radius: 10px;
 
       .me-nav {
         display: flex;
@@ -181,7 +213,7 @@ export default {
         text-align:center;
         line-height: 22px;
 
-        .van-image {
+        .avatar {
           background-color: white;
         }
 
@@ -196,10 +228,10 @@ export default {
         display: flex;
         flex-direction: column;
         padding-left: 10px;
+        text-align: start;
 
         .me-id {
             font-size: 13px;
-            text-align: start;
         }
         .van-tag {
           height: 12px;
@@ -232,7 +264,10 @@ export default {
 
   }
     .me-container{
-
+      .mail {
+        margin-top: 10px;
+        margin-bottom: 10px; 
+      }
       .van-cell__left-icon {
         font-size: 18px;
         margin-right: 10px;
@@ -262,7 +297,7 @@ export default {
         margin-top: 10px;
         font-size: 15px;
         color: #FA6054;
-        line-height: 14px;
+        line-height: 20px;
         padding: 10px 0;
       }
     }

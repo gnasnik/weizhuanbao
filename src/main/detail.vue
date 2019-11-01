@@ -1,9 +1,7 @@
 <template>
 <div class="app">
     <!-- 导航 -->
-    <van-sticky>
-        <van-nav-bar title="详情" left-text="返回" left-arrow  @click-left="onClickLeft"></van-nav-bar>
-    </van-sticky>
+    <van-nav-bar title="详情" left-text="返回" fixed left-arrow  @click-left="onClickLeft"></van-nav-bar>
     
     <div class="detail-header">
         <div class="title">{{item.Title}}</div>
@@ -20,7 +18,7 @@
     </div>
     <div class="detail-mission">
        <div class="main">
-            <div class="price">￥{{ item.Price/100}}</div>
+            <van-image src="../src/images/icon2.png" width="30" height="30"/><div class="price">x{{item.Price}}</div>
             <div class="checktime">最快{{ item.CheckTime}}分钟内验收</div>
        </div>
         <div class="mission-desc"> 
@@ -81,7 +79,7 @@
                 <div class="center">
                      <div class="nickname">{{comment.Role.NickName}}</div>
                      <div class="created">{{timeChange(comment.CreatedAt*1000)}}</div>
-                     <div class="content">{{comment.Content?comment.Content:'该用户没有填写评价。该用户没有填写评价。该用户没有填写评价。'}}</div>
+                     <div class="content">{{comment.Content?comment.Content:'该用户没有填写评价。'}}</div>
                 </div>
                 <div class="end"><van-rate :value="5" size="12px"/></div>
             </template>
@@ -89,7 +87,7 @@
        </div>
     </div>
     <div class="accept" v-show="showBtn()">
-        <van-submit-bar :button-text="btnText()" @submit="onClickBtn"/>
+        <van-submit-bar  :loading="loading" :button-text="btnText()" @submit="onClickBtn"/>
     </div>
 
 
@@ -104,12 +102,13 @@ export default {
     data(){
         return {
             role:JSON.parse(localStorage.getItem('Role')),
-            item:this.$route.query,
+            item:JSON.parse(localStorage.getItem('Mission')),
             list:[],
             images:[],
             content:'',
             user_mission:'',
-            comments:[]
+            comments:[],
+            loading:false,
         }
     },
     filters:{
@@ -120,16 +119,18 @@ export default {
     },
     created(){
         this.loadMissionComments();
-        if (this.item.Status > 1) {
+        if (this.item.Status > 1 && this.role) {
             this.loadUserMissionPlain();
         }
-        
     },
     methods:{
         preview(icon){
             ImagePreview(icon)
         },
         showBtn() {
+            if (!this.role) {
+                return true
+            }
             if ( this.item.UserInfo.UserID == this.role.UserID || this.item.Status > 1 ) {
                 return false
             }
@@ -157,23 +158,26 @@ export default {
         },
         afterRead(file,detail) {
             var self = this;
+            this.loading = true;
             this.$http.get('?c=7').then(resp=>{
                 if (resp.status==200) {
-                    var uuid = this.uuid()
                     var pic = file.content.replace(/^.*?,/, '');
                     var spl = file.file.name.split(".");
-                    var key = Base64.encode(uuid+'.'+spl[spl.length-1]);
+                    var key = Base64.encode(this.uuid()+'.'+spl[spl.length-1]);
                     var mineType = Base64.encode(file.file.type);
                     this.$http.post("http://up-z2.qiniup.com/putb64/-1/key/"+key+'/mimeType/'+ mineType,pic,
                         {headers: {'Content-Type': 'application/octet-stream', 'Authorization': "UpToken "+resp.body.UpToken}}
                     ).then(resp => {
                         var image_url  = "http://pzjt57d8l.bkt.clouddn.com/"+ resp.data.key;
                         self.images.push(image_url);
+                        this.loading = false;
                     },resp => {
                         self.$toast('上传失败，请重新上传');
+                        this.loading = false;
                     }).catch(function (error) {
                         console.log('上传失败',error)
                     });
+                    
                 } 
             },resp=>{
                 console.log(resp.body)
@@ -201,7 +205,6 @@ export default {
             };
             this.$http.post('?c=19',cms,{headers:{'Content-Type':'application/json'}}).then(
             resp => {
-                console.log(resp.body);
                 self.comments = resp.body.Comments;
             },
             resp => {console.log(resp.body)});              
@@ -214,10 +217,6 @@ export default {
         },
         onSubmit(){
             var self = this;
-            if (self.item.Review && !self.images) {
-                self.$toast('请上传图片');
-                return 
-            }
             var args = {MissionID:self.item.ID,Content:self.content,Images:self.images}
             this.$http.post('?c=12',args,{headers:{'Content-Type':'application/json'}}).then(
                 resp=>{
@@ -226,12 +225,13 @@ export default {
                         self.$router.go(-1);
                     }
                 },
-                resp=>{
-                    console.log(resp.body)
-                }
-            )
+                resp=>{console.log(resp.body)})
         },
         onAccept(){
+            if (!this.role) {
+                this.$router.push("/login")
+                return 
+            }
             var self = this;
             this.$http.post('?c=10',{MissionID:self.item.ID},{headers:{'Content-Type':'application/json'}}).then(
                 resp=>{
@@ -240,10 +240,7 @@ export default {
                         self.$router.go(-1);
                     }
                 },
-                resp=>{
-                    console.log(resp.body)
-                }
-            )
+                resp=>{console.log(resp.body)})
         },
         formatDateTime(timeValue) {
             var date = new Date(timeValue);
@@ -264,7 +261,6 @@ export default {
             var date = (new Date()); //当前时间
             var today = new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime(); //今天凌晨
             var yestday = new Date(today - 24 * 3600 * 1000).getTime();
-            console.log(today, yestday, timeValue)
             return timeValue < today && yestday <= timeValue;
         },
 		isYear (timeValue) {
@@ -285,18 +281,6 @@ export default {
             }else {
                 var returnTime = this.formatDateTime(timeValue);
             }
-            // } else if(timeDiffer > 3600000 && this.isYestday(timeValue) === true) { //昨天
-                
-            //     var returnTime = '昨天'+this.formatDateTime(timeValue).substr(11,5);
-                
-            // } else if (timeDiffer > 86400000 && this.isYestday(timeValue) === false && this.isYear (timeValue) === true){	//今年
-                
-            //     var returnTime = this.formatDateTime(timeValue).substr(5,11);
-                
-            // } else if (timeDiffer > 86400000 && this.isYestday(timeValue) === false && this.isYear (timeValue) === false) { //不属于今年
-                
-            //     var returnTime = this.formatDateTime(timeValue).substr(0,10);         
-            // }
             return returnTime;
 		}
     }
@@ -315,12 +299,12 @@ export default {
     }
 
     .user{ 
-        padding: 15px 10px;
+        padding: 10px 10px;
         display: flex;
         div {
             display: flex;
             flex-direction: column;
-            font-size: 8px;
+            font-size: 12px;
             flex: 1;
         }
         span{

@@ -1,7 +1,7 @@
 <template>
 <div>
     <!-- 导航 -->
-    <van-nav-bar title="发布任务" left-text="返回" left-arrow  @click-left="onClickLeft"></van-nav-bar>
+    <van-nav-bar title="发布任务" fixed left-text="返回" left-arrow  @click-left="onClickLeft"></van-nav-bar>
 
     <!-- 选择任务类型 -->
     <van-cell title="选择任务类型" required is-link :value="mission_name"  @click="showMissionTag=!showMissionTag"/>
@@ -20,8 +20,8 @@
     <van-cell-group>
         <!-- 标题 -->
         <van-field v-model="mission.Title" label="标题："   required type="textarea" placeholder="请输入任务名称" rows="1" autosize />
-        <van-field v-model.number="mission.Price" type="number" label="单价(元)：" required placeholder="请输入任务单价,0.01元起" rows="1" 
-            autosize  right-icon="info-o" @click-right-icon="$toast('提高任务单价更容易成单')"/>
+        <van-field v-model.number="mission.Price" type="number" label="奖励(微币)：" required  placeholder="不低于1微币" rows="1"  
+            autosize  right-icon="info-o" @click-right-icon="$toast('完成任务时发放的奖励，微币可以兑换礼品')"/>
         <van-field v-model.number="mission.Amount" type="number" label="任务数量：" required placeholder="请输入任务数量" rows="1" autosize />
 
         <!-- 验收时间 -->
@@ -58,7 +58,7 @@
                     <van-uploader :after-read="afterRead" name='step' v-model="item.url" :max-count="1"/>
                 </div>
             </div>
-            <van-button type="primary" color="#EE0A24" size="small" @click="addStep">添加图片</van-button>
+            <van-button type="primary" color="#EE0A24" size="normal" @click="addStep">添加图片</van-button>
         </div>
         </van-cell>
 
@@ -67,7 +67,7 @@
         <van-cell class="check-container" title="设置审核" required label="审核图样最多三张，要求用户提供几张图片，就上传几张">
         <van-uploader :after-read="afterRead" name='check' v-model="check_list" :max-count="3"/>
         <van-field v-model="mission.Content" label="审核文字" placeholder="如要接单人提供文字信息" rows="1" autosize/>    
-        <van-button type="primary" color="#EE0A24" size="large" @click="createMission">发布任务</van-button>
+        <van-button type="primary" color="#EE0A24" size="normal" @click="createMission">发布任务</van-button>
         </van-cell>
     </van-cell-group>
     
@@ -174,19 +174,23 @@ export default {
             this.showPicker = false;
         },
         createMission(){
+            if (!this.role) {
+                this.$router.push("/login")
+                return 
+            }
             var self = this;
             if (!this.mission.Title) {
                 this.$toast('标题不能为空');
                 return
             }
             if (!this.mission.Price) {
-                this.$toast('单价不能为空');
+                this.$toast('奖励不能为空');
                 return
             }
-            if (this.mission.Price < 0.01) {
-                this.$toast('单价不能低于 0.01 元')
+            if (this.mission.Price < 1) {
+                this.$toast('奖励不能低于1个微币')
             }
-            self.mission.Price = Math.round(self.mission.Price *100)
+            // self.mission.Price = Math.round(self.mission.Price *100)
             this.$http.post("?c=6",self.mission,{headers:{'Content-Type':'application/json'}}).then(resp=>{
                 if (resp.status == 200) {
                    self.mission.UserInfo = JSON.parse(localStorage.getItem('Role'));
@@ -194,14 +198,11 @@ export default {
                 }
             },resp=>{
                 if (resp.body.code == 65543) {
-                    self.$toast('余额不足，请充值');
-                    self.mission.Price = self.mission.Price / 100
+                    self.$toast('微币不足，请充值');
+                    // self.mission.Price = self.mission.Price / 100
                 }
             })
         },
-        updateRole(){
-
-        }
     }
 }
 </script>
@@ -276,6 +277,9 @@ export default {
 
     .van-cell__value {
         text-align: left;
+    }
+    .van-button{
+        width: 100%;
     }
 }
 </style>

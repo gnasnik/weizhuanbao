@@ -30,7 +30,10 @@
                         <!-- {{item.Finished?item.Finished:0}} 人做过  剩余 {{item.Remain?item.Remain:0}} 份 -->
                         {{item.Remain?item.Amount-item.Remain:item.Amount}} 人做过  剩余 {{item.Remain?item.Remain:0}} 份
                 </div>
-                <div class="media-price">￥{{item.Price/100}}</div>
+                    <div class="media-price">
+                        <div class="right">
+                        <van-image width="30" height="30" src="../src/images/icon2.png"/><div>x{{item.Price}}</div></div>
+                    </div>
                 </van-cell> 
             </div>
         </van-list>
@@ -50,7 +53,7 @@ export default {
             advertises:'',
             notice:'',
             list:[],
-            tab_list:[{name:'recent',title:"最新发布"},{name:'weight',title:"精选推荐"},{name:'highpay',title:"薪酬最高"}],
+            tab_list:[{name:'recent',title:"最新发布"},{name:'weight',title:"精选推荐"},{name:'highpay',title:"奖励最高"}],
             recent_list:[],
         }
     },
@@ -61,11 +64,8 @@ export default {
                 this.advertises = response.body.Advertises;
                 this.notice = response.body.Notice;   
             }
-
         },
-        response => {
-            console.log(response);
-        });
+        response => {console.log(response);});
         this.$http.post('?c=9',{Type:1}, {headers:{'Content-Type':'application/json'}}).then(
             response =>{
                 if (response.status == 200 )  {
@@ -112,7 +112,8 @@ export default {
             )
         },
        onMissionList(item) {
-           this.$router.push({path:"/detail",query:item})
+           localStorage.setItem('Mission',JSON.stringify(item))
+           this.$router.push("/detail")
        }
     }
 }
@@ -151,11 +152,14 @@ export default {
     .item-list {
         font-size: 12px;
         color:#323233;
-        flex: 1;
     } 
     .media-price {
         color: #F8534F;
-        font-size: 18px;
+        font-size: 14px;
+    }
+    .right {
+        display: flex;
+        line-height: 30px;
     }
 }
 

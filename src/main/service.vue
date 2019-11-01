@@ -2,13 +2,18 @@
 <div class="app">
     <!-- 导航 -->
     <van-sticky>
-        <van-nav-bar title="设置名字" left-arrow  @click-left="onClickLeft">
+        <van-nav-bar title="我的客服" left-arrow  @click-left="onClickLeft">
             <!-- <van-icon name="search" slot="right" /> -->
         </van-nav-bar>
     </van-sticky>
 
-     <van-field v-model="value" clearable  :focus="true"/>
+    <div class="wrapper">
+        <van-cell title="添加微信号: umbra888" icon="../src/images/wx.png">
+        </van-cell>
+    </div>
+
     
+
 </div> 
 </template>
  
@@ -18,21 +23,14 @@
 export default {
     data(){
         return {
-            focus:false,
-            value:'',
+            content:'',
+            list:[],
         }
     },
-    created(){
-        this.value = this.$route.query.name;
-        // this.focus();
-    },
     methods:{
-        onfocus(){
-            return true
-        },
         onClickLeft(){
             this.$router.go(-1);
-        },
+        }
     }
 }
 </script>

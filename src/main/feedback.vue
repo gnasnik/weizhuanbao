@@ -1,11 +1,7 @@
 <template>
 <div class="app">
     <!-- 导航 -->
-    <van-sticky>
-        <van-nav-bar title="意见反馈" left-arrow  @click-left="onClickLeft">
-            <!-- <van-icon name="search" slot="right" /> -->
-        </van-nav-bar>
-    </van-sticky>
+    <van-nav-bar title="意见反馈" fixed left-arrow  @click-left="onClickLeft"></van-nav-bar>
 
     <van-field v-model="content"   type="textarea" :autosize="{maxHeight: 300, minHeight: 200}" size="large" placeholder="请输入内容" />
 
@@ -28,7 +24,8 @@ export default {
             this.$router.go(-1);
         },
         onSubmit(){
-
+            this.$toast('感谢您的反馈与建议')
+            this.$router.go(-1);
         }
     }
 }

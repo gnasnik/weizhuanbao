@@ -20,13 +20,15 @@
                     <div class="item-list">
                         <div class="van-ellipsis" style="font-size:15px;">
                             {{item.Title}} 
-                            <!-- <van-tag v-show="item.Status" plain type="danger">{{ item.Status | missionStatus}}</van-tag> -->
                         </div>
                         <van-icon name="friends-o" size="15px"/>
-                            <!-- {{item.Finished?item.Finished:0}} 人做过  剩余 {{item.Remain?item.Remain:0}} 份 -->
                             {{item.Remain?item.Amount-item.Remain:item.Amount}} 人做过  剩余 {{item.Remain?item.Remain:0}} 份
                     </div>
-                    <div class="media-price">￥{{item.Price/100}}</div>
+                    <!-- <div class="media-price">￥{{item.Price/100}}</div> -->
+                    <div class="media-price">
+                        <div class="right">
+                        <van-image width="30" height="30" src="../src/images/icon2.png"/><div>x{{item.Price}}</div></div>
+                    </div>
                     </van-cell> 
                 </div>
             </van-list>
@@ -89,7 +91,8 @@ export default {
             //this.$toast('刷新成功');
         },
         onMissionList(item) {
-           this.$router.push({path:"/detail",query:item})
+           localStorage.setItem('Mission',JSON.stringify(item))
+           this.$router.push("/detail")
        },
        missionTypes(){
             const self = this;
@@ -140,8 +143,12 @@ export default {
     .media-price {
         display: inline-block;
         width: 20%; 
-        color: red;
-        font-size: 16px; 
+        color:#F8534F;
+        font-size: 14px; 
+    }
+    .right {
+        display: flex;
+        line-height: 30px;
     }
 }
 </style>

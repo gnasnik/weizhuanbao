@@ -11,7 +11,7 @@ Vue.prototype.$base64 = base64;
 Vue.use(VueRouter)
 Vue.use(VueResource)
 
-Vue.http.options.root = "http://localhost:8888/";
+Vue.http.options.root = "http://10.244.49.185:8888/";
 Vue.http.headers.common['Content-Type'] = 'application/json';
 
 Vue.http.interceptors.push((request, next) => {
@@ -53,7 +53,9 @@ import { SubmitBar } from 'vant';
 import { Circle } from 'vant';
 import { Dialog } from 'vant';
 import { Sticky } from 'vant';
+import { Card } from 'vant';
 
+Vue.use(Card);
 Vue.use(Sticky);
 Vue.use(Dialog);
 Vue.use(Circle);

@@ -27,21 +27,13 @@ export default {
 
 
 <style lang="scss" scoped>
-    .v-enter,
-    .v-leave-to {
-        opacity: 0;
-        transform: translateX(100%);
-    }
-
-    .v-enter-active,
-    .v-leave-active{
-        transition: all 0.6s ease;
-    }
-
     .middleContainter {
         display: flex;
         flex-direction: column;
         height: 100%;
         margin-bottom: 50px;
     }
+    
+    *{margin: 0; padding: 0;}
+    
 </style>
