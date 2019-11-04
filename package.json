@@ -1,12 +1,12 @@
 {
-  "name": "bangbangle",
+  "name": "weizhuanbao",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "webpack-dev-server",
-    "build":"node build/build.js"
+    "start": "webpack-dev-server --entry ./src/main.js --output-filename ./dist/bundle.js"
   },
   "keywords": [],
   "author": "",
