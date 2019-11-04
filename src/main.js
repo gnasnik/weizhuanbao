@@ -11,7 +11,7 @@ Vue.prototype.$base64 = base64;
 Vue.use(VueRouter)
 Vue.use(VueResource)
 
-Vue.http.options.root = "http://10.244.49.185:8888/";
+Vue.http.options.root = "http://127.0.0.1:8888/api/v1/";
 Vue.http.headers.common['Content-Type'] = 'application/json';
 
 Vue.http.interceptors.push((request, next) => {
