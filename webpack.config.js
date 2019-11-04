@@ -9,9 +9,9 @@ module.exports = {
         filename:"bundle.js",
     },
     devServer:{
-        host:'0.0.0.0',
+        host:'127.0.0.1',
         open:true,
-        port:4200, 
+        port:3700, 
     },
     plugins:[
         new VueLoaderPlugin(),
