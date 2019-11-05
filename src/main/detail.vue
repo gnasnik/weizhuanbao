@@ -222,6 +222,7 @@ export default {
                 resp=>{
                     if ( resp.status == 200 )  {
                         self.$toast('提交成功')
+                        self.item.Status = 2;
                         self.$router.go(-1);
                     }
                 },
@@ -237,6 +238,7 @@ export default {
                 resp=>{
                     if ( resp.status == 200 )  {
                         self.$toast('任务领取成功，请在我的任务里查看')
+                        self.item.Status = 1;
                         self.$router.go(-1);
                     }
                 },

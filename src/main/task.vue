@@ -155,11 +155,12 @@ export default {
             resp => {console.log(resp.body)});  
        },
        onMissionList(item) {
+           localStorage.setItem('Mission',JSON.stringify(item))
            if (this.tabv == 1 && this.currnet_menu == 1) {
-                this.$router.push({path:"/review",query:item})
+                this.$router.push("/review")
                 return 
            }
-           this.$router.push({path:"/detail",query:item})
+           this.$router.push("/detail")
        },
        onTabChange(value,title){
             // 我在做的任务
