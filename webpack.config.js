@@ -11,7 +11,8 @@ module.exports = {
     devServer:{
         host:'127.0.0.1',
         open:true,
-        port:3700, 
+        port:3700,
+        disableHostCheck: true,
     },
     plugins:[
         new VueLoaderPlugin(),
