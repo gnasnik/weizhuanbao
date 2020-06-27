@@ -1,0 +1,53 @@
+{
+  "name": "weizhuanbao",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "webpack-dev-server"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "babel-core": "^6.26.3",
+    "babel-loader": "^7.1.5",
+    "babel-plugin-component": "^1.1.1",
+    "babel-plugin-transform-runtime": "^6.23.0",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-stage-0": "^6.24.1",
+    "css-loader": "^3.2.0",
+    "fibers": "^4.0.1",
+    "node-sass": "^4.12.0",
+    "sass": "^1.23.0-module.beta.1",
+    "sass-loader": "^8.0.0",
+    "style-loader": "^1.0.0",
+    "url-loader": "^2.1.0",
+    "vue": "^2.6.10",
+    "vue-loader": "^15.7.1",
+    "vue-template-compiler": "^2.6.10",
+    "webpack": "^4.39.3",
+    "webpack-cli": "^3.3.9",
+    "webpack-dev-server": "^3.8.0"
+  },
+  "dependencies": {
+    "at-ui": "^1.3.3",
+    "babel-plugin-import": "^1.12.1",
+    "highlight": "^0.2.4",
+    "html-webpack-plugin": "^3.2.0",
+    "html2canvas": "^1.0.0-rc.5",
+    "js-base64": "^2.5.1",
+    "js-md5": "^0.7.3",
+    "less": "^3.10.3",
+    "less-loader": "^5.0.0",
+    "protobufjs": "^6.8.8",
+    "qiniu-js": "^2.5.4",
+    "qrcodejs2": "0.0.2",
+    "vant": "^2.2.7",
+    "vue-awesome-swiper": "^3.1.3",
+    "vue-markdown": "^2.2.4",
+    "vue-resource": "^1.5.1",
+    "vue-router": "^3.1.3"
+  }
+}
